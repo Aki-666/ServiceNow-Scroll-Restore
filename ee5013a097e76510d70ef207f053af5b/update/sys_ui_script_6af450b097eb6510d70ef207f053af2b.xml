@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description/>
+        <global>false</global>
+        <ignore_in_now_experience>false</ignore_in_now_experience>
+        <name>x_424426_scroll.scroll_restore</name>
+        <script><![CDATA[var x_424426_scroll = x_424426_scroll || {};
+x_424426_scroll.scroll_restore = (function() {
+	"use strict";
+	
+	/* global localStorage */
+	/* eslint no-undef: "error" */
+	if (x_424426_scroll.scroll_restore) {
+		return x_424426_scroll.scroll_restore;
+	}
+	
+	x_424426_scroll.loader.get('window', function ($window) {
+		var scrollPositions = {};
+		try {
+			scrollPositions = JSON.parse(localStorage.getItem('sn_scroll_pos_save'));
+		} catch (e) {
+
+		}
+		
+		$window.addEventListener('beforeunload', function (event) {
+			var scrollElement = $window.document.querySelector('[id$=form_scroll], .sp-scroll');
+			if (scrollElement) {
+				// this will save the position on Core UI forms and all Service Portal pages
+				scrollPositions[$window.location.href] = scrollElement.scrollTop;
+				localStorage.setItem('sn_scroll_pos_save', JSON.stringify(scrollPositions));
+			} else if ($window.pageYOffset) {
+				// this will save the position on Core UI list
+				scrollPositions[$window.location.href] = $window.pageYOffset;
+				localStorage.setItem('sn_scroll_pos_save', JSON.stringify(scrollPositions));
+			}
+		});
+		
+		if ($window.addAfterPageLoadedEvent) {
+			// Core UI provides several event, but scroll position set is only possible after the page loaded
+			$window.addAfterPageLoadedEvent(function () {
+				restoreScrollPosition();
+			});
+		} else {
+			// Service Portal does not provide any of the Core UI even thandlers
+			// instead we have to inject our own "ready" handlers
+			var ootbFormWidget = 'fd1f4ec347730200ba13a5554ee490c0';
+			var ootbDataTableWidget = '5001b062d7101200b0b044580e6103eb';
+			var observer = new $window.MutationObserver(function (mutations) {
+				for (var i = 0; i < mutations.length; i++) {
+					var mutation = mutations[i];
+					if (mutation.addedNodes) {
+						for (var j = 0; j < mutation.addedNodes.length; j++) {
+							var node = mutation.addedNodes[j];
+							if (node.classList && !node.classList.contains('scroll-injected')) {
+								if (node.classList.contains('v' + ootbDataTableWidget)) {
+									// when ready, the widget-data-table changes the 'loadingData' attribute
+									// of the widget's client controller
+									node.classList.add('scroll-injected');
+									var listElement = $window.angular.element(node);
+									var listScope = listElement.scope();
+									var loadingDataUnsubscribe = listScope.$watch('loadingData', function (newValue) {
+										if (newValue == false) {
+											loadingDataUnsubscribe();
+											listElement.injector().get('$timeout')(restoreScrollPosition);
+										}
+									});
+								} else if (node.classList.contains('v' + ootbFormWidget)) {
+									// when ready, the widget-form emits the 'spModel.gForm.rendered' event
+									node.classList.add('scroll-injected');
+									var formScope = $window.angular.element(node).scope();
+									var formRenderedUnsubscribe = formScope.$on('spModel.gForm.rendered', function () {
+										formRenderedUnsubscribe();
+										restoreScrollPosition();
+									});
+								}
+							}
+						}
+					}
+				}   
+			});
+
+			observer.observe($window.document, {
+				childList: true,
+				subtree: true
+			});
+		}
+		
+		function restoreScrollPosition() {
+			var scrollPos = scrollPositions[$window.location.href];		
+			if (scrollPos) {
+				var scrollElement = $window.document.querySelector('[id$=form_scroll], .sp-scroll');
+				if (scrollElement) {
+					scrollElement.scrollTop = scrollPos;
+				} else {
+					$window.scrollTo($window.pageXOffset, scrollPos);
+				}
+			}
+		}
+	});
+
+	return {
+		type: 'scroll_restore'
+	};
+})();
+]]></script>
+        <script_name>scroll_restore</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2023-06-17 21:13:59</sys_created_on>
+        <sys_id>6af450b097eb6510d70ef207f053af2b</sys_id>
+        <sys_mod_count>13</sys_mod_count>
+        <sys_name>x_424426_scroll.scroll_restore</sys_name>
+        <sys_package display_value="Scroll Restore" source="x_424426_scroll">ee5013a097e76510d70ef207f053af5b</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Scroll Restore">ee5013a097e76510d70ef207f053af5b</sys_scope>
+        <sys_update_name>sys_ui_script_6af450b097eb6510d70ef207f053af2b</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2023-06-18 09:33:01</sys_updated_on>
+        <ui_type>10</ui_type>
+        <use_scoped_format>true</use_scoped_format>
+    </sys_ui_script>
+</record_update>

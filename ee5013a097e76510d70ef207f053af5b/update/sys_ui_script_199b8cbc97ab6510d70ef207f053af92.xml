@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description>Note: This is a global UI script ('global' value was changed via Background Script)</description>
+        <global>true</global>
+        <ignore_in_now_experience>false</ignore_in_now_experience>
+        <name>x_424426_scroll.loader</name>
+        <script><![CDATA[var x_424426_scroll = x_424426_scroll || {};
+x_424426_scroll.loader = (function() {
+	"use strict";
+	
+	/* global window, setTimeout */
+	/* eslint no-undef: "error" */
+	if (x_424426_scroll.loader) {
+		return x_424426_scroll.loader;
+	}
+	
+	var resources = {};
+	var resourceCallbacks = {};
+	
+	if (typeof window !== 'undefined' && window) {
+		resources['window'] = window;
+	} else {
+		setTimeout(function () {
+			setResource('window', this);
+		});
+	}
+	
+	createScript('x_424426_scroll.scroll_restore.jsdbx?v=1.0.0');
+
+	return {
+		set: setResource,
+		get: getResource,
+		type: 'loader'
+	};
+	
+	function getResource(resource, callback) {
+		if (resource in resources) {
+			callback(resources[resource]);
+		} else {
+			if (!(resource in resourceCallbacks)) {
+				resourceCallbacks[resource] = [];
+			}
+			
+			resourceCallbacks[resource].push(callback);
+		}
+	}
+	
+	function setResource(resource, value) {
+		resources[resource] = value;
+		(resourceCallbacks[resource] || []).forEach(function (callback) {
+			callback(value);
+		});
+	}
+	
+	function createScript(src) {
+		getResource('window', function ($window) {
+			var script = $window.document.createElement('script');
+			script.src = src;
+			$window.document.head.appendChild(script);
+		});
+	}
+})();
+]]></script>
+        <script_name>loader</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2023-06-17 20:41:59</sys_created_on>
+        <sys_id>199b8cbc97ab6510d70ef207f053af92</sys_id>
+        <sys_mod_count>14</sys_mod_count>
+        <sys_name>x_424426_scroll.loader</sys_name>
+        <sys_package display_value="Scroll Restore" source="x_424426_scroll">ee5013a097e76510d70ef207f053af5b</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Scroll Restore">ee5013a097e76510d70ef207f053af5b</sys_scope>
+        <sys_update_name>sys_ui_script_199b8cbc97ab6510d70ef207f053af92</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2023-06-18 09:14:02</sys_updated_on>
+        <ui_type>10</ui_type>
+        <use_scoped_format>true</use_scoped_format>
+    </sys_ui_script>
+</record_update>
