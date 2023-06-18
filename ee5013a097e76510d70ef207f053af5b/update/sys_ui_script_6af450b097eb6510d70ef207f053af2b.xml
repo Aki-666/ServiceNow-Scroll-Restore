@@ -16,23 +16,46 @@ x_424426_scroll.scroll_restore = (function() {
 	}
 	
 	x_424426_scroll.loader.get('window', function ($window) {
-		var scrollPositions = {};
+		var scrollInfos = {};
 		try {
-			scrollPositions = JSON.parse(localStorage.getItem('sn_scroll_pos_save'));
+			scrollInfos = JSON.parse(localStorage.getItem('x_424426_scroll_infos')) || {};
 		} catch (e) {
 
 		}
 		
 		$window.addEventListener('beforeunload', function (event) {
 			var scrollElement = $window.document.querySelector('[id$=form_scroll], .sp-scroll');
-			if (scrollElement) {
-				// this will save the position on Core UI forms and all Service Portal pages
-				scrollPositions[$window.location.href] = scrollElement.scrollTop;
-				localStorage.setItem('sn_scroll_pos_save', JSON.stringify(scrollPositions));
-			} else if ($window.pageYOffset) {
-				// this will save the position on Core UI list
-				scrollPositions[$window.location.href] = $window.pageYOffset;
-				localStorage.setItem('sn_scroll_pos_save', JSON.stringify(scrollPositions));
+			if (scrollElement || $window.pageYOffset) {
+				// scrollElement is available on Core UI forms and all Service Portal pages
+				// pageYOffset is used on Core UI lists
+				scrollInfos[$window.location.href] = {
+					date: Date.now(),
+					pos: scrollElement ? scrollElement.scrollTop : $window.pageYOffset
+				};
+				
+				// to remove the oldest URLs, we transform the object to an array ...
+				var savedURLs = Object.entries(scrollInfos).map(function (key, value) {
+					return {
+						url: key,
+						date: value.date,
+						pos: value.pos
+					};
+				});
+				
+				// ... sort it by date ...
+				savedURLs.sort(function (a, b) { return a.date - b.date; });
+				
+				// ... and remove the oldest URLs
+				if (savedURLs.length > 100) {
+					savedURLs.splice(100);
+				}
+				
+				scrollInfos = savedURLs.reduce(function (obj, element) {
+					obj[element.url] = { date: element.date, pos: element.pos };
+					return obj;
+				}, {});
+				
+				localStorage.setItem('x_424426_scroll_infos', JSON.stringify(scrollInfos));
 			}
 		});
 		
@@ -87,13 +110,13 @@ x_424426_scroll.scroll_restore = (function() {
 		}
 		
 		function restoreScrollPosition() {
-			var scrollPos = scrollPositions[$window.location.href];		
-			if (scrollPos) {
+			var scrollInfo = scrollInfos[$window.location.href];		
+			if (scrollInfo) {
 				var scrollElement = $window.document.querySelector('[id$=form_scroll], .sp-scroll');
 				if (scrollElement) {
-					scrollElement.scrollTop = scrollPos;
+					scrollElement.scrollTop = scrollInfo.pos;
 				} else {
-					$window.scrollTo($window.pageXOffset, scrollPos);
+					$window.scrollTo($window.pageXOffset, scrollInfo.pos);
 				}
 			}
 		}
@@ -109,14 +132,14 @@ x_424426_scroll.scroll_restore = (function() {
         <sys_created_by>admin</sys_created_by>
         <sys_created_on>2023-06-17 21:13:59</sys_created_on>
         <sys_id>6af450b097eb6510d70ef207f053af2b</sys_id>
-        <sys_mod_count>13</sys_mod_count>
+        <sys_mod_count>16</sys_mod_count>
         <sys_name>x_424426_scroll.scroll_restore</sys_name>
         <sys_package display_value="Scroll Restore" source="x_424426_scroll">ee5013a097e76510d70ef207f053af5b</sys_package>
         <sys_policy/>
         <sys_scope display_value="Scroll Restore">ee5013a097e76510d70ef207f053af5b</sys_scope>
         <sys_update_name>sys_ui_script_6af450b097eb6510d70ef207f053af2b</sys_update_name>
         <sys_updated_by>admin</sys_updated_by>
-        <sys_updated_on>2023-06-18 09:33:01</sys_updated_on>
+        <sys_updated_on>2023-06-18 14:29:41</sys_updated_on>
         <ui_type>10</ui_type>
         <use_scoped_format>true</use_scoped_format>
     </sys_ui_script>
