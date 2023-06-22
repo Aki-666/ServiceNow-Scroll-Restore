@@ -16,6 +16,11 @@ x_424426_scroll.scroll_restore = (function() {
 	}
 	
 	var localStorageKey = 'x_424426_scroll_infos_v2';
+	// Core UI Form: [id$=form_scroll]
+	// Next Experience List: .list_div[ispolaris=true]
+	// UI15/UI16 List: <scroll happens on window element>
+	// Service Portal (all pages): .sp-scroll
+	var scrollSelector = '[id$=form_scroll], .sp-scroll, .list_div[ispolaris=true]';
 	x_424426_scroll.loader.get('window', function ($window) {
 		var scrollInfos = {};
 		try {
@@ -26,7 +31,7 @@ x_424426_scroll.scroll_restore = (function() {
 		}
 		
 		$window.addEventListener('beforeunload', function (event) {
-			var scrollElement = $window.document.querySelector('[id$=form_scroll], .sp-scroll');
+			var scrollElement = $window.document.querySelector(scrollSelector);
 			if (scrollElement || $window.pageYOffset) {
 				// scrollElement is available on Core UI forms and all Service Portal pages
 				// pageYOffset is used on Core UI lists
@@ -114,7 +119,7 @@ x_424426_scroll.scroll_restore = (function() {
 		function restoreScrollPosition() {
 			var scrollInfo = scrollInfos[$window.location.href];		
 			if (scrollInfo) {
-				var scrollElement = $window.document.querySelector('[id$=form_scroll], .sp-scroll');
+				var scrollElement = $window.document.querySelector(scrollSelector);
 				if (scrollElement) {
 					scrollElement.scrollTop = scrollInfo.pos;
 				} else {
@@ -134,14 +139,14 @@ x_424426_scroll.scroll_restore = (function() {
         <sys_created_by>admin</sys_created_by>
         <sys_created_on>2023-06-17 21:13:59</sys_created_on>
         <sys_id>6af450b097eb6510d70ef207f053af2b</sys_id>
-        <sys_mod_count>24</sys_mod_count>
+        <sys_mod_count>26</sys_mod_count>
         <sys_name>x_424426_scroll.scroll_restore</sys_name>
         <sys_package display_value="Scroll Restore" source="x_424426_scroll">ee5013a097e76510d70ef207f053af5b</sys_package>
         <sys_policy/>
         <sys_scope display_value="Scroll Restore">ee5013a097e76510d70ef207f053af5b</sys_scope>
         <sys_update_name>sys_ui_script_6af450b097eb6510d70ef207f053af2b</sys_update_name>
         <sys_updated_by>admin</sys_updated_by>
-        <sys_updated_on>2023-06-22 09:36:36</sys_updated_on>
+        <sys_updated_on>2023-06-22 10:41:29</sys_updated_on>
         <ui_type>10</ui_type>
         <use_scoped_format>true</use_scoped_format>
     </sys_ui_script>
