@@ -15,12 +15,14 @@ x_424426_scroll.scroll_restore = (function() {
 		return x_424426_scroll.scroll_restore;
 	}
 	
+	var localStorageKey = 'x_424426_scroll_infos_v2';
 	x_424426_scroll.loader.get('window', function ($window) {
 		var scrollInfos = {};
 		try {
-			scrollInfos = JSON.parse(localStorage.getItem('x_424426_scroll_infos')) || {};
+			scrollInfos = JSON.parse(localStorage.getItem(localStorageKey)) || {};
+			localStorage.clear('x_424426_scroll_infos'); // clear old key
 		} catch (e) {
-
+			localStorage.clear(localStorageKey);
 		}
 		
 		$window.addEventListener('beforeunload', function (event) {
@@ -34,11 +36,11 @@ x_424426_scroll.scroll_restore = (function() {
 				};
 				
 				// to remove the oldest URLs, we transform the object to an array ...
-				var savedURLs = Object.entries(scrollInfos).map(function (key, value) {
+				var savedURLs = Object.entries(scrollInfos).map(function (info) {
 					return {
-						url: key,
-						date: value.date,
-						pos: value.pos
+						url: info[0],
+						date: info[1].date,
+						pos: info[1].pos
 					};
 				});
 				
@@ -55,7 +57,7 @@ x_424426_scroll.scroll_restore = (function() {
 					return obj;
 				}, {});
 				
-				localStorage.setItem('x_424426_scroll_infos', JSON.stringify(scrollInfos));
+				localStorage.setItem(localStorageKey, JSON.stringify(scrollInfos));
 			}
 		});
 		
@@ -91,8 +93,8 @@ x_424426_scroll.scroll_restore = (function() {
 								} else if (node.classList.contains('v' + ootbFormWidget)) {
 									// when ready, the widget-form emits the 'spModel.gForm.rendered' event
 									node.classList.add('scroll-injected');
-									var formScope = $window.angular.element(node).scope();
-									var formRenderedUnsubscribe = formScope.$on('spModel.gForm.rendered', function () {
+									var $rootScope = $window.angular.element(node).injector().get('$rootScope');
+									var formRenderedUnsubscribe = $rootScope.$on('spModel.gForm.rendered', function () {
 										formRenderedUnsubscribe();
 										restoreScrollPosition();
 									});
@@ -132,14 +134,14 @@ x_424426_scroll.scroll_restore = (function() {
         <sys_created_by>admin</sys_created_by>
         <sys_created_on>2023-06-17 21:13:59</sys_created_on>
         <sys_id>6af450b097eb6510d70ef207f053af2b</sys_id>
-        <sys_mod_count>16</sys_mod_count>
+        <sys_mod_count>24</sys_mod_count>
         <sys_name>x_424426_scroll.scroll_restore</sys_name>
         <sys_package display_value="Scroll Restore" source="x_424426_scroll">ee5013a097e76510d70ef207f053af5b</sys_package>
         <sys_policy/>
         <sys_scope display_value="Scroll Restore">ee5013a097e76510d70ef207f053af5b</sys_scope>
         <sys_update_name>sys_ui_script_6af450b097eb6510d70ef207f053af2b</sys_update_name>
         <sys_updated_by>admin</sys_updated_by>
-        <sys_updated_on>2023-06-18 14:29:41</sys_updated_on>
+        <sys_updated_on>2023-06-22 09:36:36</sys_updated_on>
         <ui_type>10</ui_type>
         <use_scoped_format>true</use_scoped_format>
     </sys_ui_script>
